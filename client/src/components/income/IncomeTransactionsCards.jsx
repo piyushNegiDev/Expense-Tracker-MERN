@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { useContext } from "react";
 import { AppDataContext } from "../../context/AppDataContext";
 import { RxCrossCircled } from "react-icons/rx";
-import { setData } from "../../util/localStorage";
+import axios from "axios";
 
 export default function IncomeTransactionsCards({ type }) {
   const { appData, setAppData } = useContext(AppDataContext);
@@ -18,13 +18,15 @@ export default function IncomeTransactionsCards({ type }) {
       return diffA - diffB;
     });
 
-  const deleteTransaction = (id) => {
-    const newData = appData.filter((item) => {
-      return item.id !== id;
-    });
+  const deleteTransaction = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/transactions/${id}`);
 
-    setAppData(newData);
-    setData(newData);
+      setAppData((prevData) => prevData.filter((item) => item._id !== id));
+    } catch (error) {
+      console.error("Failed to delete transaction:", error);
+      alert("Failed to delete transaction. Please try again.");
+    }
   };
 
   return (
@@ -42,7 +44,7 @@ export default function IncomeTransactionsCards({ type }) {
         const formatted = dayjs(item.date).format("D MMMM, YYYY");
         return (
           <div
-            key={item.id}
+            key={item._id}
             className="flex justify-between items-center bg-gray-200 px-4 py-2 rounded-md"
           >
             <div>
@@ -55,7 +57,7 @@ export default function IncomeTransactionsCards({ type }) {
               <p>₹{item.amount} </p>
               <button
                 onClick={() => {
-                  deleteTransaction(item.id);
+                  deleteTransaction(item._id);
                 }}
                 className="text-red-500"
               >

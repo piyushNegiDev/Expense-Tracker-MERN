@@ -1,10 +1,10 @@
 import { CiCirclePlus } from "react-icons/ci";
 import { useContext } from "react";
 import { AppDataContext } from "../../context/AppDataContext";
-import { setData } from "../../util/localStorage";
+import axios from "axios";
 
 export default function AddIncomeForm({ type }) {
-  const { appData, setAppData } = useContext(AppDataContext);
+  const { setAppData } = useContext(AppDataContext);
 
   const incomeCategories = [
     "Salary",
@@ -30,27 +30,31 @@ export default function AddIncomeForm({ type }) {
     "Other",
   ];
 
-  const addIncome = (event, type) => {
+  const addIncome = async (event, type) => {
     event.preventDefault();
 
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData);
+
     const finalData = {
       ...data,
-      id: crypto.randomUUID(),
       amount: Number(data.amount),
       type,
     };
 
-    const newData = [...appData, finalData];
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/transactions",
+        finalData,
+      );
 
-    setAppData(newData);
+      setAppData((prevData) => [...prevData, response.data]);
 
-    setData(newData);
-
-    event.target[0].value = "";
-    event.target[1].value = "";
-    event.target[3].value = "";
+      event.target.reset();
+    } catch (error) {
+      console.error("Failed to add transaction:", error);
+      alert("Failed to add transaction. Please try again.");
+    }
   };
 
   return (
