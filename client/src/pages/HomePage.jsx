@@ -3,11 +3,22 @@ import Header from "../components/home/Header";
 import HeaderCards from "../components/home/HeaderCards";
 import PieLineChartSection from "../components/home/PieLineChartSection";
 import { useContext } from "react";
-import { setData } from "../util/localStorage";
 import { AppDataContext } from "../context/AppDataContext";
+import axios from "axios";
 
 export default function HomePage() {
   const { setAppData } = useContext(AppDataContext);
+
+  const deleteAllTransactions = async () => {
+    try {
+      await axios.delete("http://localhost:8000/api/transactions");
+
+      setAppData([]);
+    } catch (error) {
+      console.error("Failed to delete transactions:", error);
+      alert("Failed to delete transactions. Please try again.");
+    }
+  };
 
   return (
     <>
@@ -21,10 +32,7 @@ export default function HomePage() {
         <PieLineChartSection />
         <div className="flex justify-center">
           <button
-            onClick={() => {
-              setAppData([]);
-              setData([]);
-            }}
+            onClick={deleteAllTransactions}
             className="border rounded-lg px-4 py-2 bg-red-500 text-lg text-white font-semibold"
           >
             Delete Data
